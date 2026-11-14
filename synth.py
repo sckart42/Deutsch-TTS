@@ -48,7 +48,7 @@ vowels = [
     ["e-", 517, 1447, 2500, 0.07]] # this is an unstressed e
 
 for i in vowels:
-    name = "sounds/" + i[0] + ".wav"
+    name = i[0]
     fr1 = i[1]
     fr2 = i[2]
     fr3 = i[3]
@@ -61,7 +61,7 @@ for i in vowels:
 
     out = fade(out)
     out /= np.max(np.abs(out))
-    wavfile.write(name, rate, (out * 0.8 * 32767).astype(np.int16))
+    wav(name, out)
 
     out = src
 
@@ -101,7 +101,7 @@ wav("ch", fade(hiss(140, 1700, 1200)) * 0.5)
 f = noise(140)
 wav("f", fade(f / np.max(np.abs(f))) * 0.3)
 
-wav("z", fade(hiss(115, 5500, 1500) * 0.3 + buzz(115) * 0.7))
+wav("z", fade(hiss(115, 5500, 1500) * 0.3 + buzz(115) * 0.7)) # sounds like an English z; in German it's always an s like in Sonne
 wav("v", fade(hiss(115, 5000, 4000) * 0.2 + buzz(115) * 0.6))
 
 
