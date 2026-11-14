@@ -10,6 +10,7 @@ os.makedirs("sounds", exist_ok=True)
 
 src = np.zeros(int(rate / 5))
 src[::rate // pitch] = 1.0
+out = src
 
 # The following function I did not write. In fact, I do not know at all how the math behind it does the magic, but it works. This is a chinese room to me. God bless the internet.
 def resonator (x, freq, bw):
@@ -17,7 +18,13 @@ def resonator (x, freq, bw):
     B = 2 * np.exp(-np.pi * bw / rate) * np.cos(2 * np.pi * freq / rate)
     A = 1 - B - C
     return lfilter([A], [1, -B, -C], x)
-out = src
+    
+def fade (x, ms=5):
+    samples = int(rate * ms / 1000)
+    x[:samples] *= np.linspace(0, 1, samples)
+    x[-samples:] *= np.linspace(1, 0, samples)
+    return x
+
 
 vowels = [
     ["a", 694, 1372, 2500, 0.1], # single letter = short
@@ -49,6 +56,7 @@ for i in vowels:
     for f, bw in [(fr1, 60), (fr2, 90), (fr3, 150)]:
         out = resonator(out, f, bw)
 
+    out = fade(out)
     out /= np.max(np.abs(out))
     wavfile.write(name, rate, (out * 0.8 * 32767).astype(np.int16))
 
