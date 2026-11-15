@@ -8,7 +8,7 @@ import os
 rate = 16000; pitch = 140
 os.makedirs("sounds", exist_ok=True)
 
-src = np.zeros(int(rate / 5))
+src = np.zeros(int(rate))
 src[::rate // pitch] = 1.0
 out = src
 
@@ -19,9 +19,15 @@ def resonator (x, freq, bw):
     A = 1 - B - C
     return lfilter([A], [1, -B, -C], x)
 
+def antiresonator (x, freq, bw):
+    C = -np.exp(-2 * np.pi * bw / rate)
+    B = 2 * np.exp(-np.pi * bw / rate) * np.cos(2 * np.pi * freq / rate)
+    A = 1 - B - C
+    return lfilter([1, -B, -C], [A], x)
+
 def wav (name, x):
     wavfile.write("sounds/" + name + ".wav", rate, (x * 0.8 * 32767).astype(np.int16))
-    
+
 def fade (x, ms=5):
     samples = int(rate * ms / 1000)
     x[:samples] *= np.linspace(0, 1, samples)
@@ -34,7 +40,7 @@ vowels = [
     ["aa", 737, 1275, 2500, 0.2], # double letter = long
     ["e", 489, 1817, 2500, 0.1],
     ["ee", 348, 2126, 2500, 0.2],
-    ["i", 300, 2300, 3000, 0.1], # sounded to much like e so I adjusted it. Will revert to the earlier value if it sounds bad
+    ["i", 369, 1902, 3000, 0.1], # it indeed sounded bad, so I reverted it
     ["ie", 263, 2171, 3000, 0.2], # this is also long
     ["o", 537, 1074, 2500, 0.1],
     ["oo", 383, 841, 2500, 0.2],
@@ -45,7 +51,7 @@ vowels = [
     ["oee", 371, 1501, 2500, 0.2], # this is also long
     ["ue", 373, 1543, 2500, 0.1],
     ["uee", 302, 1722, 2500, 0.2],
-    ["e-", 517, 1447, 2500, 0.07]] # this is an unstressed e
+    ["e-", 517, 1447, 2500, 0.1]] # this is an unstressed e
 
 for i in vowels:
     name = i[0]
@@ -56,8 +62,8 @@ for i in vowels:
 
     out = out[:int(rate * length)]
 
-    for f, bw in [(fr1, 60), (fr2, 90), (fr3, 150)]:
-        out = resonator(out, f, bw)
+    for fr, bw in [(fr1, 60), (fr2, 90), (fr3, 150)]:
+        out = resonator(out, fr, bw)
 
     out = fade(out)
     out /= np.max(np.abs(out))
@@ -87,16 +93,14 @@ def click (ms, freq, bw):
 
 def buzz (ms):
     samples = int(rate * ms / 1000)
-    x = np.zeros(samples)
-    x[::rate // pitch] = 1.0
-    x = resonator(x, 300, 400)
-    x /= np.max(np.abs(x))
-    return x
+    x = resonator(src[:int(samples)], 300, 400)
+    return x / np.max(np.abs(x))
+
 
 
 wav("s", fade(hiss(140, 5500, 1500)))
 wav("sch", fade(hiss(140, 2600, 1000)))
-wav("ch", fade(hiss(140, 1700, 1200)) * 0.5)
+wav("ch", fade(hiss(140, 1200, 1200)) * 0.5)
 
 f = noise(140)
 wav("f", fade(f / np.max(np.abs(f))) * 0.3)
@@ -112,9 +116,40 @@ wav("k", k)
 p = np.concatenate([silence(60), click(10, 800, 1500), 0.2 * fade(hiss(20, 1500, 2000))])
 wav("p", p)
 
-g = np.concatenate([0.15 * fade(buzz(30)), 0.7 * click(20, 2000, 1000)])
+g = np.concatenate([0.15 * fade(buzz(30)), 0.7 * click(20, 2000, 600), 0.2 * fade(hiss(20, 2200, 800))])
 wav("g", g)
 d = np.concatenate([0.15 * fade(buzz(30)), 0.7 * click(20, 4000, 1200)])
 wav("d", d)
 b = np.concatenate([0.15 * fade(buzz(30)), 0.6 * click(20, 800, 1500)])
 wav("b", b)
+
+
+nasals = [
+    ["m", 115, 1000],
+    ["n", 115, 1500],
+    ["ng", 115, 3200]]
+
+for i in nasals:
+    name = i[0]
+    length = i[1]
+    freq = i[2]
+    samples = int(rate * length / 1000)
+
+    out = resonator(src[:samples], 250, 100)
+    out = resonator(out, 2500, 300)
+    out = antiresonator(out, freq, 150)
+    out /= np.max(np.abs(out))
+    out = fade(out) * 0.5
+
+    wav(name, out)
+
+
+# I wanted to just glue these sounds (eg t and s) together but it didn't sound natural for some reason, so we're just going to regenerate both and glue them together before they're audio files
+ts = np.concatenate([silence(60), click(12, 4000, 1200), fade(hiss(80, 5500, 1500))])
+wav("ts", ts)
+tsch = np.concatenate([silence(60), click(12, 4000, 1200), fade(hiss(80, 2600, 1000))])
+wav("tsch", tsch)
+pf = np.concatenate([silence(60), click(10, 800, 1500), fade(f / np.max(np.abs(f))) * 0.3])
+wav("pf", pf)
+
+wav("zh", fade(hiss(115, 2600, 1000) * 0.15 + buzz(115) * 0.8)) # eg Gara`g`e, `J`ournal
