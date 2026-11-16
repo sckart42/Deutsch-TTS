@@ -7,6 +7,7 @@ import os
 
 rate = 16000; pitch = 140
 os.makedirs("sounds", exist_ok=True)
+np.random.seed(42)
 
 src = np.zeros(int(rate))
 src[::rate // pitch] = 1.0
@@ -51,7 +52,12 @@ vowels = [
     ["oee", 371, 1501, 2500, 0.2], # this is also long
     ["ue", 373, 1543, 2500, 0.1],
     ["uee", 302, 1722, 2500, 0.2],
-    ["e-", 517, 1447, 2500, 0.1]] # this is an unstressed e
+    ["e-", 517, 1447, 2500, 0.1], # this is an unstressed e
+
+    # the following are consonants but I'm not going to rename the list because of them
+    ["l+", 360, 1300, 2700, 0.1], # clear l
+    ["l-", 360, 900, 2500, 0.1],
+    ["r-", 450, 1450, 2500, 0.1]] # uvular r
 
 for i in vowels:
     name = i[0]
@@ -106,7 +112,7 @@ f = noise(140)
 wav("f", fade(f / np.max(np.abs(f))) * 0.3)
 
 wav("z", fade(hiss(115, 5500, 1500) * 0.3 + buzz(115) * 0.7)) # sounds like an English z; in German it's always an s like in Sonne
-wav("v", fade(hiss(115, 5000, 4000) * 0.2 + buzz(115) * 0.6))
+wav("v", fade(hiss(115, 5000, 4000) * 0.1 + buzz(115) * 0.7))
 
 
 t = np.concatenate([silence(60), click(12, 4000, 1200), 0.3 * fade(hiss(30, 5500, 1500))])
@@ -153,3 +159,20 @@ pf = np.concatenate([silence(60), click(10, 800, 1500), fade(f / np.max(np.abs(f
 wav("pf", pf)
 
 wav("zh", fade(hiss(115, 2600, 1000) * 0.15 + buzz(115) * 0.8)) # eg Gara`g`e, `J`ournal
+
+
+def trill (ms):
+    trill_hz=25
+    depth=0.85
+    sharpness=5
+
+    samples = int(rate * ms / 1000)
+    r = src[:samples]
+    for fr, bw in [(450, 60), (1450, 90), (2500, 150)]:
+        r = resonator(r, fr, bw)
+    t = np.arange(samples) / rate
+    closure = ((1 - np.cos(2 * np.pi * trill_hz * t)) / 2) ** sharpness
+    r /= np.max(np.abs(r))
+    r *= (1 - depth * closure)
+    return r
+wav("r+", fade(trill(115))) # rolling r
