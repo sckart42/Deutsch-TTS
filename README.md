@@ -4,10 +4,10 @@ A Text-To-Speech system made to "speak" German
 ---
 
 ### Current Functionality
-- generate most sounds in the German language (except h and j, as they're reliant on the vowel that comes after them)  
+- generate most sounds in the German language (except h and j, as they're reliant on the vowel that comes after them)
+- Text-To-Speech
 
 ### Functionality to come
-- text-to-speech (pick the correct sounds and glue them into a big .wav file)
 - text normalization (for example `bzw.`, `usw.`, `5 €`, `MfG`, etc.)
 
 ### Functionality that might be added later; no guarantees
@@ -23,10 +23,15 @@ pip install numpy scipy
 
 ### Usage
 - Step 1:
-  Generate the sound library (generates a `sounds/` directory in the location you run the script from)
+  Run TTS.py
   ```
-  python synth.py
+  python TTS.py
   ```
 
+  or, in quick mode, which takes `input.txt` as input and uses `output.wav` as output
+  ```
+  python TTS.py -q
+  ```
+  
 - Step 2:
-  Wait until I finish the actual TTS
+  Follow the instructions on screen (if you did not run in quick mode)
