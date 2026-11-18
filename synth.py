@@ -55,8 +55,7 @@ vowels = [
     ["e-", 517, 1447, 2500, 0.1], # this is an unstressed e
 
     # the following are consonants but I'm not going to rename the list because of them
-    ["l+", 360, 1300, 2700, 0.1], # clear l
-    ["l-", 360, 900, 2500, 0.1],
+    ["l", 360, 1300, 2700, 0.1],
     ["r-", 450, 1450, 2500, 0.1]] # uvular r
 
 for i in vowels:
