@@ -153,6 +153,9 @@ for w in words:
         if w[x:x+4] == "tsch":
             sounds.append(load("tsch"))
             x += 4
+        elif x <= len(w) - 4 and x >= len(w) - 6 and  w[x:x+4] == "tion":
+            sounds.append(load("ts"))
+            x += 1
         elif w[x:x+3] == "sch":
             sounds.append(load("sch"))
             x += 3
