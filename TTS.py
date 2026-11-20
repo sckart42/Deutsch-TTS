@@ -320,10 +320,12 @@ for w in words:
                 syll += 1
 
 
-            elif w[x] in (",", ";", ":", "-", "—", "–", " "): # turns out that besides em dashes and hyphens there are also en dashes
-                sounds.append(silence(100))
-            elif w[x] in (".", "!", "?", "\n"):
+            elif w[x] == " ":
+                sounds.append(silence(75))
+            elif w[x] in (",", ";", ":", "-", "—", "–"): # turns out that besides em dashes and hyphens there are also en dashes
                 sounds.append(silence(200))
+            elif w[x] in (".", "!", "?", "\n"):
+                sounds.append(silence(400))
             else:
                 print('No sound found for: ' + w[x])
             x += 1
