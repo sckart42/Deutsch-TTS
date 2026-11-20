@@ -1,6 +1,8 @@
 # Deutsch-TTS
 A Text-To-Speech system made to "speak" German
 
+best enjoyed with subtitles
+
 ---
 
 ### Current Functionality
